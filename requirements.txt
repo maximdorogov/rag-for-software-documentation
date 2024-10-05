@@ -1,0 +1,6 @@
+langchain_mistralai
+langchain_huggingface
+langchain_chroma
+langchain_community
+markdown
+fastapi
