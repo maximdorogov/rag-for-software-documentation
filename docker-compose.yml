@@ -1,0 +1,34 @@
+services:
+  chromadb:
+    image: chromadb/chroma:0.5.11
+    container_name: chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./database/chroma:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+    networks:
+      - chroma-net
+  
+  inference_worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - DB_PORT=8000
+      - DB_HOST=chromadb
+    ports:
+      - 80:80
+    env_file:
+      - .env
+    entrypoint: uvicorn api:app --port 80 --host 0.0.0.0
+    depends_on:
+      - chromadb
+    networks:
+      - chroma-net
+
+networks:
+  chroma-net:
+    driver: bridge
