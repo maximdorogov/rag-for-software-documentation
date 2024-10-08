@@ -23,6 +23,8 @@ The system is composed of a vector database and an inference worker, both integr
 The embedding extraction is made on a locally running model, in order to save some credits since this is project uses free models and the credits burn really fast if you want to encode the whole dataset.
 The inference part is done using MistralAI, a third party API similar to OpenAI, so you need to go to [mistral.ai](https://mistral.ai/) and generate your free api key.
 
+The key component here is [LangChain](https://python.langchain.com) package. LangChain is a framework that facilitate the integration of large language models into applications and also simplifies the data pre-processing steps such as embedding extraction.
+
 The system output follows this schema:
 
 ```python
@@ -31,6 +33,7 @@ class LLMResponse:
     docs: Set[str]
     answer: str
 ```
+> `answer` is the main answer from the system and `docs` is a set of document names that contain more detailed information about the asked topic.
 
 
 ## System setup
@@ -38,23 +41,56 @@ class LLMResponse:
 ### Requirements
 [Docker](https://docs.docker.com/manuals/) (thats all!)
 
+## Embedding model download
+
+Download the embeddings extraction model from [HERE](https://drive.google.com/drive/folders/1ZQaqmevV5jLVqxDzORn2IERBbrIdjhw1?usp=drive_link). And place it in the root this project.
+
 ### Database build
 
 Since this is a demo based on opensource/free tools in order to speed up the excecution the documents must be parsed and the database must be built before the first excecution. 
 
-Download the dataset from [HERE]()
+Download the dataset from [HERE](https://drive.google.com/drive/folders/1NZ-TuNeBpf_KGlezX5Iy0p4Zk-rwW7MA?usp=drive_link)
 
 To build the database run:
 ```sh
-docker build . -f Dockerfile
-
+docker build . -t inference-worker -f  Dockerfile
 ```
-> You can also download the built database from [HERE]()
+And:
+```sh
+docker run --rm -v $(pwd):/app inference-worker  python ./utils/db_builder.py  -d dataset/sagemaker_documentation -db database/chroma
+```
 
-## Build and deploy
+> NOTE: If you want to build the database yourself its recommended to use a linux
+machine with an nvidia gpu. Follow [THIS](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installation instructions and change the
+command to:
 
-Download the embeddings extraction model from [HERE](). And place it in the root
-this project.
+```sh
+docker run --rm --gpus all -v $(pwd):/app inference-worker  python ./utils/db_builder.py  -d dataset/sagemaker_documentation -db database/chroma
+```
+
+> You can also download the built database from [HERE](https://drive.google.com/drive/folders/1vJhVyXoGkj0840ALnCVoaurrfwaw-lUX?usp=drive_link)
+
+
+After those steps the project folder structure should look like this:
+
+```sh
+.
+├── all-mpnet-base-v2
+│   └── models--sentence-transformers--all-mpnet-base-v2
+├── database
+│   └── chroma
+├── dataset
+│   └── sagemaker_documentation
+├── images
+├── inference_worker
+└── utils
+└── docker-compose.yml
+└── Dockerfile
+└── readme.md
+└── requirements.txt
+```
+
+## Run the system
 
 Create a `.env` file and place it in the root of this project.
 Your `.env` should look like this:
@@ -86,10 +122,13 @@ curl -X 'POST' \
   -d ''
 ```
 
+Or test it from Postman. 
 
 ## Next Steps
 
 1. Implement an endpoint to update/delete documents from the existing database. The current database has been setted up to use persistent volumes so the only modification needed is in the `inference_worker` service.
-2. Switch to OpenAI api for inference and embedding extraction.
-
-
+2. Evaluate and switch to a different model for embedding generation and inference. Probably OpenAI or another payed API will give faster and better results.
+3. Add authentication to chromadb service.
+4. Parametrize document loader to allow different document formats.
+5. Move the pre built database to AWS S3 or GCP Cloud Storage. Use git lfs for the embedding model storage.
+6. Use K8S for production deployment instead of docker compose.
