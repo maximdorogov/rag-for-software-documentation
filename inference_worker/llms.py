@@ -21,6 +21,20 @@ class ChromaConnector:
         db_host:str,
         db_port:int,
     ):
+        """
+        Init method
+
+        Parameters
+        ----------
+        embedding_model_name:str
+            Embedding model name from hugginface embeddings.
+        embedding_model_folder:
+            Folder for the model for local embedding generation.
+        db_host: str
+            database host ip address
+        db_port: int
+            database port server address
+        """
         self._embeddings = HuggingFaceEmbeddings(
             model_name=embedding_model_name,
             cache_folder=embedding_model_folder,
@@ -32,12 +46,21 @@ class ChromaConnector:
         )
 
     def init_vector_db(self) -> Chroma:
+        """
+        Initializes the vector database
+
+        Returns
+        -------
+        An instance of Chroma database object.
+        """
         return Chroma(
             client=self._chroma_client,
             embedding_function=self._embeddings)
 
 class MistralAIRetriever:
-
+    """
+    This class acts as an interface between the user and the MistralAI model.
+    """
     def __init__(
         self, 
         api_key: str, 
@@ -48,11 +71,11 @@ class MistralAIRetriever:
         Parameters
         ----------
         api_key: str
-
+            Api key to connect to the MistralAI API
         vector_db: langchain_chroma.vectorstores
-
+            An instance of Chroma vectorstore
         model_id: str
-
+            MistraAI model id.
         """
         self._vector_db = vector_db
 
@@ -68,6 +91,8 @@ class MistralAIRetriever:
         top_k: int = 3
     ) -> langchain.chains.retrieval_qa:
         """
+        Initializes the langchain retrieval object.
+
         Parameters
         ----------
         chain_type: str
@@ -88,6 +113,8 @@ class MistralAIRetriever:
     @staticmethod
     def _extract_sources(result: Dict[str, Any]) -> Set[str]:
         """
+        Parses the query output and extract unique names for stored documents.
+
         Parameters
         ----------
         result: Dict[str, Any]
@@ -103,6 +130,8 @@ class MistralAIRetriever:
 
     def answer(self, question: str) -> Tuple[str, Set[str]]:
         """
+        Performs an inference with the llm using the user question as input.
+
         Parameters
         ----------
         question: str

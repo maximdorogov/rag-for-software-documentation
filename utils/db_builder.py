@@ -54,7 +54,7 @@ if __name__ == "__main__":
                         required=False,
                         default='sentence-transformers/all-mpnet-base-v2'
                         )
-    parser.add_argument('-m', '--embedding_model_path',
+    parser.add_argument('-mp', '--embedding_model_path',
                         help=('hugginface model path'
                         ),
                         type=str,

@@ -32,5 +32,9 @@ async def home():
 
 @app.post("/inference_endpoint")
 async def query(message: str) -> LLMResponse:
+    """
+    Endpoint responsable of triggering the LLM and generate the
+    answer for the user query.
+    """
     answer, docs = llm.answer(question=message)
     return LLMResponse(docs=docs, answer=answer)
