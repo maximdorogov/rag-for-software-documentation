@@ -1,5 +1,5 @@
-import argparse
 from typing import List
+import argparse
 import os
 
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
@@ -26,35 +26,40 @@ def load_markdown_docs(paths: List[str]) -> List[Document]:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
-            description='',
+            description='Script to build the chroma vector database',
             add_help=True,
         )
-
     parser.add_argument('-d', '--input_data_path',
-                        help=('Path folder '),
+                        help=('Dataset path folder'),
                         type=str,
                         required=True)
     parser.add_argument('-cz', '--chunk_size',
-                        help=('Path folder '),
+                        help=('Document chunk size after splitting'),
                         type=int,
                         required=False,
                         default=1000)
     parser.add_argument('-co', '--chunk_overlap',
-                        help=('Path folder '),
+                        help=('Overlap between chunks after splitting'),
                         type=int,
                         required=False,
                         default=90)
     parser.add_argument('-db', '--db_path',
-                        help=('Path folder '),
+                        help=('Database output folder'),
                         type=str,
                         required=True)
     parser.add_argument('-m', '--embedding_model_name',
-                        help=('Identifier string that should be on the filename to '
-                            'compare the base result with the one with the identifier'
+                        help=('hugginface model for embedding generation'
                         ),
                         type=str,
                         required=False,
                         default='sentence-transformers/all-mpnet-base-v2'
+                        )
+    parser.add_argument('-m', '--embedding_model_path',
+                        help=('hugginface model path'
+                        ),
+                        type=str,
+                        required=False,
+                        default='./all-mpnet-base-v2'
                         )
     args = parser.parse_args()
     
@@ -63,7 +68,7 @@ if __name__ == "__main__":
 
     embedding = HuggingFaceEmbeddings(
         model_name=args.embedding_model_name,
-        cache_folder='./all-mpnet-base-v2',
+        cache_folder=args.embedding_model_path,
     )
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=args.chunk_size, chunk_overlap=args.chunk_overlap)
