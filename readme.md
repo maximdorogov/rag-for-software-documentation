@@ -104,8 +104,9 @@ INFERECE_MODEL=mistral-large-latest
 Once the database is build place it in `/database` and run (from the root directory of this project):
 
 ```sh
-docker compose up
+docker compose -f ./docker-compose.yml up
 ```
+> If you are using a machine that has nvidia GPU's you can use `docker compose -f ./docker-compose-gpu.yml up` 
 
 this will bring the system up.
 
